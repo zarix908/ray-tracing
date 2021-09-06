@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vec3 {
     x: f64,
     y: f64,
@@ -40,6 +40,10 @@ impl Vec3 {
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
         }
+    }
+
+    pub fn normalize(&self) -> Vec3 {
+        self / self.len()
     }
 }
 
@@ -91,10 +95,34 @@ impl Add for &Vec3 {
     }
 }
 
+impl Add for Vec3 {
+    type Output = Vec3;
+
+    fn add(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+            z: self.z + other.z,
+        }
+    }
+}
+
 impl Sub for &Vec3 {
     type Output = Vec3;
 
     fn sub(self, other: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z,
+        }
+    }
+}
+
+impl Sub for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -115,10 +143,30 @@ impl Mul<f64> for &Vec3 {
     }
 }
 
+impl Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: f64) -> Vec3 {
+        Vec3 {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+        }
+    }
+}
+
 impl Mul<&Vec3> for f64 {
     type Output = Vec3;
 
     fn mul(self, rhs: &Vec3) -> Vec3 {
+        rhs * self
+    }
+}
+
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Vec3 {
         rhs * self
     }
 }
@@ -131,10 +179,26 @@ impl Div<f64> for &Vec3 {
     }
 }
 
+impl Div<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, rhs: f64) -> Vec3 {
+        self * (1.0 / rhs)
+    }
+}
+
 impl Div<&Vec3> for f64 {
     type Output = Vec3;
 
     fn div(self, rhs: &Vec3) -> Vec3 {
+        rhs / self
+    }
+}
+
+impl Div<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn div(self, rhs: Vec3) -> Vec3 {
         rhs / self
     }
 }

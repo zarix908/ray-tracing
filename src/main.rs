@@ -1,29 +1,61 @@
 use std::{fs::File, io, io::prelude::*};
 mod vec3;
 use vec3::Vec3;
+mod ray;
+use ray::Ray;
+
+fn ray_color(ray: &Ray) -> Vec3 {
+    let t = 0.5 * (ray.direction().normalize().y() + 1.0);
+    (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+}
+
+fn write_color(file: &mut File, color: &Vec3) -> Result<(), io::Error> {
+    writeln!(
+        file,
+        "{} {} {}",
+        (color.x() * 255.999) as u8,
+        (color.y() * 255.999) as u8,
+        (color.z() * 255.999) as u8,
+    )
+}
 
 fn main() {
-    println!(
-        "{:?}",
-        Vec3::new(1.0, 2.0, 3.0).cross(&Vec3::new(1.0, 5.0, 7.0))
-    );
+    // image
+    let aspect_ratio = 16.0 / 9.0;
+    let img_width = 400;
+    let img_height = img_width / aspect_ratio as i32;
 
-    // let img_width = 256;
-    // let img_height = 256;
+    // camera
+    let viewport_height = 2.0;
+    let viewport_width = aspect_ratio * viewport_height;
+    let focal_length = 1.0;
 
-    // let mut img = File::create("output/image.ppm").unwrap();
+    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, viewport_height, 0.0);
+    let lower_left_corner =
+        &origin - &(&horizontal / 2.0) - &vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
-    // writeln!(img, "P3\n{} {}\n255", img_width, img_height).unwrap();
+    // render
 
-    // for j in (0..img_height).rev() {
-    //     println!("scanlines remaining: {}", j);
-    //     io::stdout().flush().unwrap();
-    //     for i in 0..img_width {
-    //         let r = i as f64 / (img_width - 1) as f64 * 255.999;
-    //         let g = j as f64 / (img_height - 1) as f64 * 255.999;
-    //         let b = 0.25 * 255.999;
+    let mut img = File::create("output/image.ppm").unwrap();
 
-    //         writeln!(img, "{} {} {}", r as u8, g as u8, b as u8).unwrap();
-    //     }
-    // }
+    writeln!(img, "P3\n{} {}\n255", img_width, img_height).unwrap();
+
+    for j in (0..img_height).rev() {
+        println!("scanlines remaining: {}", j);
+        io::stdout().flush().unwrap();
+
+        for i in 0..img_width {
+            let u = i as f64 / (img_width as f64 - 1.0);
+            let v = j as f64 / (img_height as f64 - 1.0);
+
+            let ray = Ray::new(
+                origin.clone(),
+                &(&lower_left_corner + &(u * &horizontal) + v * &vertical) - &origin,
+            );
+
+            write_color(&mut img, &ray_color(&ray)).unwrap();
+        }
+    }
 }
