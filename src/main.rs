@@ -5,20 +5,24 @@ mod ray;
 use ray::Ray;
 mod sphere;
 mod hittable;
+mod hittable_list;
+mod hit_record;
+use hit_record::HitRecord;
 use sphere::Sphere;
-use hittable::{HitRecord, Hittable};
+use hittable::Hittable;
+use hittable_list::HittableList;
 
-fn ray_color(ray: &Ray) -> Vec3 {
-    let s = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+fn ray_color(ray: &Ray, world: &Hittable) -> Vec3 {
+    // let s = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let mut rec = HitRecord{
         p: Vec3::new(0.0, 0.0, 0.0),
         t: 0.0,
         normal: Vec3::new(0.0, 0.0, 0.0),
         front_face: false,
     };
-    if s.hit(ray, -100.0, 100.0, &mut rec) {
-        let n = rec.normal;
-        0.5 * Vec3::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0)
+
+    if world.hit(ray, 0.0, f64::INFINITY, &mut rec) {
+        0.5 * (rec.normal + Vec3::new(1.0, 1.0, 1.0))
     } else {
         let t = 0.5 * (ray.direction().normalize().y() + 1.0);
         (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
@@ -52,6 +56,12 @@ fn main() {
     let lower_left_corner =
         &origin - &(&horizontal / 2.0) - &vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
+    // world 
+    let world = Hittable::List(HittableList::new(vec![
+        Hittable::Sphere(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+        Hittable::Sphere(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
+    ]));
+
     // render
 
     let mut img = File::create("output/image.ppm").unwrap();
@@ -71,7 +81,7 @@ fn main() {
                 &(&lower_left_corner + &(u * &horizontal) + v * &vertical) - &origin,
             );
 
-            write_color(&mut img, &ray_color(&ray)).unwrap();
+            write_color(&mut img, &ray_color(&ray, &world)).unwrap();
         }
     }
 }

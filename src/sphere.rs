@@ -1,4 +1,4 @@
-use crate::{Vec3, Ray, hittable::Hittable, hittable::HitRecord};
+use crate::{Vec3, Ray, HitRecord};
 
 pub struct Sphere {
     center: Vec3,
@@ -9,10 +9,8 @@ impl Sphere {
     pub fn new(center: Vec3, radius: f64) -> Sphere {
         Sphere { center, radius }
     }
-}
 
-impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc = ray.origin() - &self.center;
         let a = ray.direction().sqr_len();
         let half_b = oc.dot(ray.direction());

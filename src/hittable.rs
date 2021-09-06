@@ -1,26 +1,21 @@
-use crate::{Vec3, Ray};
+use crate::{hittable_list::HittableList, Sphere, Ray, HitRecord};
 
-pub struct HitRecord {
-    pub p: Vec3,
-    pub normal: Vec3,
-    pub t: f64,
-    pub front_face: bool,
+pub enum Hittable {
+    List(HittableList),
+    Sphere(Sphere),
 }
 
-impl HitRecord {
-    pub fn set_face_normal(&mut self, ray: &Ray, outward_normal: &Vec3) {
-        self.front_face = ray.direction().dot(outward_normal) < 0.0;
-        self.normal = if self.front_face { 1.0 } else { -1.0 } * outward_normal;
+impl Hittable {
+    pub fn hit(
+        &self, 
+        ray: &Ray,
+        t_min: f64, 
+        t_max: f64,
+        rec: &mut HitRecord,
+    ) -> bool {
+        match &self {
+            Hittable::List(l) => l.hit(ray, t_min, t_max, rec),
+            Hittable::Sphere(s) => s.hit(ray, t_min, t_max, rec),
+        }
     }
-
-    pub fn from(&mut self, rec: &HitRecord) {
-        self.p = rec.p.clone();
-        self.normal = rec.p.clone();
-        self.t = rec.t;
-        self.front_face = rec.front_face;
-    }
-}
-
-pub trait Hittable {
-    fn hit(self: &Self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
 }
