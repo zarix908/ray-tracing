@@ -5,8 +5,12 @@ mod ray;
 use ray::Ray;
 
 fn ray_color(ray: &Ray) -> Vec3 {
-    let t = 0.5 * (ray.direction().normalize().y() + 1.0);
-    (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+    if hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, ray) {
+        Vec3::new(1.0, 0.0, 0.0)
+    } else {
+        let t = 0.5 * (ray.direction().normalize().y() + 1.0);
+        (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+    }
 }
 
 fn write_color(file: &mut File, color: &Vec3) -> Result<(), io::Error> {
@@ -19,11 +23,20 @@ fn write_color(file: &mut File, color: &Vec3) -> Result<(), io::Error> {
     )
 }
 
+fn hit_sphere(center: Vec3, radius: f64, ray: &Ray) -> bool {
+    let oc = ray.origin() - &center;
+    let a = ray.direction().dot(ray.direction());
+    let b = 2.0 * oc.dot(ray.direction());
+    let c = oc.dot(&oc) - radius * radius;
+    let disc = b * b - 4.0 * a * c;
+    disc > 0.0
+}
+
 fn main() {
     // image
     let aspect_ratio = 16.0 / 9.0;
     let img_width = 400;
-    let img_height = img_width / aspect_ratio as i32;
+    let img_height = (img_width as f64 / aspect_ratio) as i32;
 
     // camera
     let viewport_height = 2.0;
