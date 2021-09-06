@@ -3,13 +3,11 @@ mod vec3;
 use vec3::Vec3;
 
 fn main() {
-    let mut a = Vec3::new(1.0, 2.0, 3.0);
-    let mut b = -Vec3::new(1.0, 2.0, 3.0);
-    a += &b;
-    b *= 3.0;
-    b /= 3.0;
-    println!("{:?}", a);
-    println!("{:?}", b);
+    println!(
+        "{:?}",
+        Vec3::new(1.0, 2.0, 3.0).cross(&Vec3::new(1.0, 5.0, 7.0))
+    );
+
     // let img_width = 256;
     // let img_height = 256;
 
