@@ -14,6 +14,7 @@ fn ray_color(ray: &Ray) -> Vec3 {
         p: Vec3::new(0.0, 0.0, 0.0),
         t: 0.0,
         normal: Vec3::new(0.0, 0.0, 0.0),
+        front_face: false,
     };
     if s.hit(ray, -100.0, 100.0, &mut rec) {
         let n = rec.normal;
