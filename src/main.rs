@@ -11,9 +11,11 @@ use hit_record::HitRecord;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use sphere::Sphere;
+mod camera;
+use camera::Camera;
+use rand::Rng;
 
 fn ray_color(ray: &Ray, world: &Hittable) -> Vec3 {
-    // let s = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
     let mut rec = HitRecord {
         p: Vec3::new(0.0, 0.0, 0.0),
         t: 0.0,
@@ -29,13 +31,25 @@ fn ray_color(ray: &Ray, world: &Hittable) -> Vec3 {
     }
 }
 
-fn write_color(file: &mut File, color: &Vec3) -> Result<(), io::Error> {
+fn clamp(value: f64, min: f64, max: f64) -> f64 {
+    if value < min {
+        min
+    } else if value > max {
+        max
+    } else {
+        value
+    }
+}
+
+fn write_color(file: &mut File, color: &Vec3, samples_per_pixel: i32) -> Result<(), io::Error> {
+    let ratio = 1.0 / samples_per_pixel as f64;
+
     writeln!(
         file,
         "{} {} {}",
-        (color.x() * 255.999) as u8,
-        (color.y() * 255.999) as u8,
-        (color.z() * 255.999) as u8,
+        (256.0 * clamp(color.x() * ratio, 0.0, 0.999)) as u8,
+        (256.0 * clamp(color.y() * ratio, 0.0, 0.999)) as u8,
+        (256.0 * clamp(color.z() * ratio, 0.0, 0.999)) as u8,
     )
 }
 
@@ -44,17 +58,10 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let img_width = 400;
     let img_height = (img_width as f64 / aspect_ratio) as i32;
+    let samples_per_pixel = 100;
 
     // camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        &origin - &(&horizontal / 2.0) - &vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
+    let c = Camera::new();
 
     // world
     let world = Hittable::List(HittableList::new(vec![
@@ -73,15 +80,18 @@ fn main() {
         io::stdout().flush().unwrap();
 
         for i in 0..img_width {
-            let u = i as f64 / (img_width as f64 - 1.0);
-            let v = j as f64 / (img_height as f64 - 1.0);
+            let mut color = Vec3::new(0.0, 0.0, 0.0);
 
-            let ray = Ray::new(
-                origin.clone(),
-                &(&lower_left_corner + &(u * &horizontal) + v * &vertical) - &origin,
-            );
+            for _ in 0..samples_per_pixel {
+                let mut rng = rand::thread_rng();
+                let u = (i as f64 + rng.gen::<f64>()) / (img_width as f64 - 1.0);
+                let v = (j as f64 + rng.gen::<f64>()) / (img_height as f64 - 1.0);
 
-            write_color(&mut img, &ray_color(&ray, &world)).unwrap();
+                let ray = c.get_ray(u, v);
+                color += &ray_color(&ray, &world)
+            }
+
+            write_color(&mut img, &color, samples_per_pixel).unwrap();
         }
     }
 }
