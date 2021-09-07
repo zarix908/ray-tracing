@@ -1,4 +1,4 @@
-use crate::{hittable::Hittable, Ray, hit_record::HitRecord, Vec3};
+use crate::{hit_record::HitRecord, hittable::Hittable, Ray, Vec3};
 
 pub struct HittableList {
     objects: Vec<Hittable>,
@@ -11,14 +11,14 @@ impl HittableList {
 
     pub fn add(&mut self, obj: Hittable) {
         self.objects.push(obj);
-    } 
+    }
 
     pub fn clear(&mut self) {
         self.objects.clear();
     }
 
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        let mut temp_rec = HitRecord{
+        let mut temp_rec = HitRecord {
             p: Vec3::new(0.0, 0.0, 0.0),
             t: 0.0,
             normal: Vec3::new(0.0, 0.0, 0.0),

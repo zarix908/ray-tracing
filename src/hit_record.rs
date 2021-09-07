@@ -1,4 +1,4 @@
-use crate::{Vec3, Ray};
+use crate::{Ray, Vec3};
 
 pub struct HitRecord {
     pub p: Vec3,
@@ -15,7 +15,7 @@ impl HitRecord {
 
     pub fn from(&mut self, rec: &HitRecord) {
         self.p = rec.p.clone();
-        self.normal = rec.p.clone();
+        self.normal = rec.normal.clone();
         self.t = rec.t;
         self.front_face = rec.front_face;
     }

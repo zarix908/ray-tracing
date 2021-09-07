@@ -1,4 +1,4 @@
-use crate::{Vec3, Ray, HitRecord};
+use crate::{HitRecord, Ray, Vec3};
 
 pub struct Sphere {
     center: Vec3,

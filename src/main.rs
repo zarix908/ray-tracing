@@ -3,18 +3,18 @@ mod vec3;
 use vec3::Vec3;
 mod ray;
 use ray::Ray;
-mod sphere;
+mod hit_record;
 mod hittable;
 mod hittable_list;
-mod hit_record;
+mod sphere;
 use hit_record::HitRecord;
-use sphere::Sphere;
 use hittable::Hittable;
 use hittable_list::HittableList;
+use sphere::Sphere;
 
 fn ray_color(ray: &Ray, world: &Hittable) -> Vec3 {
     // let s = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-    let mut rec = HitRecord{
+    let mut rec = HitRecord {
         p: Vec3::new(0.0, 0.0, 0.0),
         t: 0.0,
         normal: Vec3::new(0.0, 0.0, 0.0),
@@ -56,7 +56,7 @@ fn main() {
     let lower_left_corner =
         &origin - &(&horizontal / 2.0) - &vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length);
 
-    // world 
+    // world
     let world = Hittable::List(HittableList::new(vec![
         Hittable::Sphere(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
         Hittable::Sphere(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
